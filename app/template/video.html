@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>music.prolikon.dev</title>
+        <link rel="icon" type="image/png" href="/static/behelit.png" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        />
+        <link rel="stylesheet" href="/static/common.css" />
+        <link rel="stylesheet" href="/static/video.css" />
+    </head>
+    <body>
+        <div class="container">
+            <img
+                id="thumbnail"
+                src="https://img.youtube.com/vi/{{video_id}}/hqdefault.jpg"
+            />
+            <!-- maxresdefault -->
+
+            <div
+                id="audio"
+                class="download-row {% if audio_status==-1 %} ready {% endif %}"
+            >
+                <a onclick="requestAudio()"
+                    ><i class="fa-solid fa-music"></i
+                ></a>
+                <i class="display-inprogress spinner fa-solid fa-gear"></i>
+                <span class="display-inprogress">Position in queue: 34</span>
+                <a class="display-ready" href="/static/{{video_id}}.mp3"
+                    ><i class="fa-solid fa-download"></i
+                ></a>
+            </div>
+
+            <div
+                id="video"
+                class="download-row {% if video_status==-1 %} ready {% endif %}"
+            >
+                <a onclick="requestVideo()"
+                    ><i class="fa-solid fa-video"></i
+                ></a>
+                <i class="display-inprogress spinner fa-solid fa-gear"></i>
+                <span class="display-inprogress">Position in queue: 34</span>
+                <a class="display-ready" href="/static/{{video_id}}.mp4"
+                    ><i class="fa-solid fa-download"></i
+                ></a>
+            </div>
+            <p>
+                TODO: Check if maxresdefault is available and use others if
+                needed
+            </p>
+        </div>
+
+        <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+        <script>
+            const audioRow = document.getElementById("audio");
+            const videoRow = document.getElementById("video");
+            const audioLabel = audioRow.querySelector(
+                "span.display-inprogress",
+            );
+            const videoLabel = videoRow.querySelector(
+                "span.display-inprogress",
+            );
+            const socket = io();
+
+            let audioPosition = 0;
+            let videoPosition = 0;
+
+            function updateLabel() {
+                if (audioPosition <= 0) {
+                    audioLabel.textContent = "Audio is being processed";
+                } else {
+                    audioLabel.textContent = `Position in queue: ${audioPosition}`;
+                }
+
+                if (videoPosition <= 0) {
+                    videoLabel.textContent = "Video is being processed";
+                } else {
+                    videoLabel.textContent = `Position in queue: ${videoPosition}`;
+                }
+            }
+
+            socket.on("task_enqueued", function (data) {
+                if (data.video_id === "{{video_id}}") {
+                    let task = data.task;
+                    console.log(data);
+                    console.log(task);
+                    if (task == "request_audio") {
+                        audioPosition = data.position;
+                        audioRow.className = "download-row inprogress";
+                    } else if (task == "request_video") {
+                        videoPosition = data.position;
+                        videoRow.className = "download-row inprogress";
+                    }
+                } else {
+                    audioPosition =
+                        audioPosition + (data.position <= audioPosition);
+                    videoPosition =
+                        videoPosition + (data.position <= videoPosition);
+                }
+                updateLabel();
+            });
+
+            socket.on("task_complete", function (data) {
+                videoPosition = videoPosition - 1;
+                audioPosition = audioPosition - 1;
+                updateLabel();
+                if (data.video_id === "{{video_id}}") {
+                    let task = data.task;
+                    if (task == "request_audio") {
+                        audioRow.className = "download-row ready";
+                    } else if (task == "request_video") {
+                        videoRow.className = "download-row ready";
+                    }
+                }
+            });
+
+            socket.on("disconnect", (reason) => {
+                console.log("Socket disconnected:", reason);
+            });
+
+            socket.on("connect_error", (error) => {
+                console.log("Connection error:", error.message || error);
+            });
+
+            function requestAudio() {
+                console.log("AUDIO");
+                socket.emit("request_audios", { video_id: ["{{video_id}}"] });
+            }
+
+            function requestVideo() {
+                console.log("VIDEO");
+                socket.emit("request_video", { video_id: "{{video_id}}" });
+            }
+        </script>
+    </body>
+</html>

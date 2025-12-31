@@ -1,0 +1,7 @@
+.cache
+.env
+node_modules/
+ignore/
+**/__pycache__/
+*.db
+app/static/media/

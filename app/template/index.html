@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>music.prolikon.dev</title>
+        <link rel="icon" type="image/png" href="/static/behelit.png" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        />
+        <link rel="stylesheet" href="/static/common.css" />
+    </head>
+    <body>
+        <div class="container">
+            <h1>
+                <span class="highlight">music</span
+                ><span class="sub">.prolikon.dev</span>
+            </h1>
+
+            <form
+                class="input-container"
+                action="{{url_for('api_route')}}"
+                method="POST"
+            >
+                <input
+                    id="url"
+                    name="url"
+                    type="text"
+                    placeholder="Enter Spotify or YouTube link"
+                />
+                <button type="submit" class="circle-button">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+            <div class="icons" style="display: none">
+                <i class="fab fa-spotify"></i>
+                <i class="fab fa-youtube"></i>
+            </div>
+            <p class="sub">TODO: Browser support warning</p>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.card {
+    @apply [&[data-state=download]>.download]:flex;
+    @apply [&[data-state=in-progress]>.in-progress]:flex;
+    @apply [&[data-state=request]>.request]:flex;
+    @apply [&[data-state=complete]>.complete]:flex;
+}
+
+.spinner {
+    animation: spin 5s linear infinite;
+}
