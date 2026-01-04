@@ -24,7 +24,7 @@
             <div class="flex-1 overflow-y-auto p-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {% for track in tracks %}
-                    <div id="{{track.id}}"
+                    <div id="{{track.id}}" data-card
                         class="relative w-full flex items-start gap-4 bg-slate-900 p-2 rounded-lg shadow hover:scale-102 transition-[scale] outline-lime-700">
                         <img class="object-cover object-center size-12 rounded-md" src="{{track.image[1].url}}"></i>
                         <div class="flex flex-col h-full justify-between">
@@ -38,14 +38,32 @@
 
         <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
         <script>
+          let id_map = {}
+
+          async function init() {
+            const response = await fetch("/spotify/{{pl_id}}/load");
+            if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+            const tracks = await response.json();
+            for (const ids of tracks) {
+              if (!ids.missing) {
+                document.getElementById(ids.spotify_id).remove();
+              }
+              id_map[ids.meta_id] = ids.spotify_id
+            }
+          }
+
           const socket = io();
 
           socket.on("task_complete", data => {
-            if (data.task == "n") {
-
+            if (data.task == "youtube_source") {
+              document.getElementById(id_map[data.meta_id]).remove();
+              if (document.querySelectorAll("[data-card]").length == 0) {
+                window.location.href = "/spotify/{{pl_id}}/";
+              }
             }
           });
 
+          init();
         </script>
 
 

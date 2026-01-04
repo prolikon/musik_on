@@ -19,12 +19,15 @@ async def find_youtube_tracksource(meta: TrackMeta):
 
     async with AsyncSessionLocal() as session:  # pyright: ignore[reportGeneralTypeIssues]
         # create new youtube Source and link to Meta
-        spotify_source = TrackSource(
+        youtube_source = TrackSource(
             source="youtube",
             id=video_id,
             track_meta=meta,
         )
-        session.add(spotify_source)
+        session.add(youtube_source)
         await session.commit()
 
-    await sio.emit("task_complete", {"task": "youtube_source", "video_id": video_id})
+    await sio.emit(
+        "task_complete",
+        {"task": "youtube_source", "meta_id": youtube_source.track_meta_id},
+    )

@@ -17,7 +17,7 @@ def get_playlist_info(playlist_url):
 
 
 def audio_exists(filename):
-    file_path = os.path.join("app", "static", "media", f"{filename}.mp3")
+    file_path = os.path.join("app", "static", "media", f"{filename}.opus")
     return os.path.exists(file_path)
 
 

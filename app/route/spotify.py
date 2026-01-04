@@ -1,8 +1,7 @@
 from os import getenv
 
 import spotipy
-from fastapi import Form, Request
-from fastapi.responses import RedirectResponse
+from fastapi import Request
 from spotipy.oauth2 import SpotifyClientCredentials
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -55,7 +54,7 @@ def get_spotify_playlist(playlist_id):
 async def spotify_playlist_load(pl_id: str):
     # get spotify playlist
     tracks = get_spotify_playlist(pl_id)
-    missing = []
+    resp = []
 
     # spotify tracksource -> trackmeta -> youtube tracksource
     async with AsyncSessionLocal() as session:  # pyright: ignore[reportGeneralTypeIssues]
@@ -95,13 +94,16 @@ async def spotify_playlist_load(pl_id: str):
             source = local or youtube
 
             if not source:
-                missing.append(
-                    f"[{sp_track['id']}] {sp_track['artists'][0]} - {sp_track['title']}"
+                resp.append(
+                    {"spotify_id": sp_track["id"], "meta_id": meta.id, "missing": True}
                 )
-                # add to youtube queue: (TM_ID, artist, track)
                 await yt_search_queue.put(meta)
+            else:
+                resp.append(
+                    {"spotify_id": sp_track["id"], "meta_id": meta.id, "missing": False}
+                )
 
-    return missing
+    return resp
 
 
 @app.get("/spotify/{pl_id}")
@@ -164,4 +166,6 @@ async def spotify_playlist(request: Request, pl_id: str):
                 }
             )
 
-        return render("spotify_playlist_load.html", request, tracks=tracks_sp)
+        return render(
+            "spotify_playlist_load.html", request, tracks=tracks_sp, pl_id=pl_id
+        )

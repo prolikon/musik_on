@@ -1,4 +1,5 @@
 import asyncio
+from os import path
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -9,7 +10,7 @@ from socketio import ASGIApp, AsyncServer
 
 load_dotenv()
 
-from . import db
+from . import db  # noqa: E402
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -31,11 +32,11 @@ audio_queue = TaskQueue(ytdl.download_audio)
 video_queue = TaskQueue(ytdl.download_video)
 yt_search_queue = TaskQueue(ytmusic.find_youtube_tracksource)
 
-if True:
+if not path.exists("app.db"):
     from .db import models  # noqa: F401
 
     # Import models to add them to the Base before initialising the database!!
-    # asyncio.create_task(db.init_db())
+    asyncio.create_task(db.init_db())
 
 # Attach the routes and shit
 from . import route, websocket  # noqa: F401 E402

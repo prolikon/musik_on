@@ -6,14 +6,12 @@ from .. import sio
 
 audio_opts = {
     # "quiet": True,
-    #'no_color': True,
-    #'no_warnings': True,
-    "format": "bestaudio/best",
+    "format": "bestaudio[acodec=opus]/251",
     "outtmpl": "app/static/media/%(id)s.%(ext)s",
     "writethumbnail": True,
     "embedthumbnail": True,
     "postprocessors": [
-        {"key": "FFmpegExtractAudio", "preferredcodec": "mp3"},
+        {"key": "FFmpegVideoRemuxer", "preferedformat": "opus"},
         {"key": "FFmpegMetadata"},
         {"key": "EmbedThumbnail"},
     ],
