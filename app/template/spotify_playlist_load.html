@@ -41,7 +41,7 @@
           let id_map = {}
 
           async function init() {
-            const response = await fetch("/spotify/{{pl_id}}/load");
+            const response = await fetch("/spotify/{{playlist.id}}/load");
             if (!response.ok) throw new Error(`HTTP error ${response.status}`);
             const tracks = await response.json();
             for (const ids of tracks) {
@@ -58,7 +58,7 @@
             if (data.task == "youtube_source") {
               document.getElementById(id_map[data.meta_id]).remove();
               if (document.querySelectorAll("[data-card]").length == 0) {
-                window.location.href = "/spotify/{{pl_id}}/";
+                window.location.href = "/spotify/{{playlist.id}}/";
               }
             }
           });

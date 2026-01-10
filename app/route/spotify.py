@@ -20,14 +20,16 @@ Spotify = spotipy.Spotify(
 
 
 def get_spotify_playlist(playlist_id):
-    results = Spotify.playlist_tracks(
-        playlist_id, fields="items(track(id,name,artists(name),album(images))),next"
+    result = Spotify.playlist(
+        playlist_id,
+        fields="images,name,description,tracks(next,items(track(id,name,artists(name),album(images))))",
     )
+    tracks = result.get("tracks")
     songs = []
 
     # Results can contain multiple pages, we dunno how many so we have to use a while loop.
-    while results:
-        for item in results["items"]:
+    while tracks:
+        for item in tracks["items"]:
             track = item["track"]
             if track:  # Check if track exists for item
                 song_info = {
@@ -39,12 +41,23 @@ def get_spotify_playlist(playlist_id):
                 songs.append(song_info)
 
         # Check if there are more pages
-        if results["next"]:
-            results = Spotify.next(results)
+        if tracks["next"]:
+            tracks = Spotify.next(tracks)
         else:
             break
 
-    return songs
+    description = result["description"]
+    if description == "":
+        description = (
+            "this spotify playlist has no description. that's pretty lame dawg."
+        )
+
+    return {
+        "thumbnail": result["images"][0]["url"],
+        "name": result["name"],
+        "description": description,
+        "tracks": songs,
+    }
 
 
 # this route should be called by the client when they load the /spotify/plid/load page.
@@ -53,7 +66,7 @@ def get_spotify_playlist(playlist_id):
 @app.get("/spotify/{pl_id}/load")
 async def spotify_playlist_load(pl_id: str):
     # get spotify playlist
-    tracks = get_spotify_playlist(pl_id)
+    tracks = get_spotify_playlist(pl_id)["tracks"]
     resp = []
 
     # spotify tracksource -> trackmeta -> youtube tracksource
@@ -108,7 +121,14 @@ async def spotify_playlist_load(pl_id: str):
 
 @app.get("/spotify/{pl_id}")
 async def spotify_playlist(request: Request, pl_id: str):
-    tracks_sp = get_spotify_playlist(pl_id)
+    playlist = get_spotify_playlist(pl_id)
+    playlist_meta = {
+        "thumbnail": playlist["thumbnail"],
+        "name": playlist["name"],
+        "description": playlist["description"],
+        "id": pl_id,
+    }
+    tracks_sp = playlist["tracks"]
     tracks_yt = []
 
     success = True
@@ -152,7 +172,9 @@ async def spotify_playlist(request: Request, pl_id: str):
 
             track["status"] = audio_status
 
-        return render("playlist.html", request, videos=tracks_yt)
+        return render(
+            "playlist.html", request, videos=tracks_yt, playlist=playlist_meta
+        )
     else:
         entries = []
 
@@ -167,5 +189,8 @@ async def spotify_playlist(request: Request, pl_id: str):
             )
 
         return render(
-            "spotify_playlist_load.html", request, tracks=tracks_sp, pl_id=pl_id
+            "spotify_playlist_load.html",
+            request,
+            tracks=tracks_sp,
+            playlist=playlist_meta,
         )
