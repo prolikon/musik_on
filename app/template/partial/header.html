@@ -1,0 +1,9 @@
+<header
+    class="flex justify-between bg-main-3 p-1 rounded-lg w-full"
+    x-data="{ open: false }"
+>
+    <img src="/static/behelit.png" class="size-10 object-cover" />
+    {% if request.session.get("user_id") %} {% include
+    "component/header_user.html" %} {% else %} {% include
+    "component/header_login.html" %} {% endif %}
+</header>

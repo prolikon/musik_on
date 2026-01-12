@@ -1,0 +1,31 @@
+<div class="relative">
+    <img
+        id="pfp"
+        src="https://i.pinimg.com/736x/11/6f/b0/116fb046428623c7aa47425c52a692fe.jpg"
+        class="size-10 object-cover rounded-sm cursor-pointer"
+        @click="open = !open"
+    />
+
+    <div
+        x-show="open"
+        x-transition
+        class="absolute right-0 mt-2 bg-main-5 p-2 rounded-lg shadow-lg w-40 space-y-1"
+    >
+        <button
+            class="block w-full text-left rounded px-2 py-1 hover:bg-main-6"
+        >
+            <i class="fa-solid fa-address-card"></i> Profile
+        </button>
+        <button
+            class="block w-full text-left rounded px-2 py-1 hover:bg-main-6"
+        >
+            <i class="fa-solid fa-gear"></i> Settings
+        </button>
+        <button
+            class="block w-full text-left rounded px-2 py-1 hover:bg-main-6"
+            @click="fetch('/auth/logout', { method: 'POST' }).then(() => window.location.reload())"
+        >
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Log out
+        </button>
+    </div>
+</div>

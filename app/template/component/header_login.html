@@ -1,0 +1,42 @@
+<div class="relative" x-data="{ open: false }">
+    <!-- Trigger -->
+    <img
+        id="pfp"
+        src="https://icon2.cleanpng.com/20180514/eqe/kisspng-social-media-computer-icons-decision-making-embroi-5af9552e2f8e67.6132320415262897101948.jpg"
+        class="size-10 object-cover rounded-sm cursor-pointer"
+        @click="open = true"
+        hx-get="/auth/login"
+        hx-target="#login-modal-body"
+        hx-swap="innerHTML"
+    />
+
+    <!-- Backdrop -->
+    <div
+        x-show="open"
+        x-transition.opacity
+        @click="open = false"
+        class="fixed inset-0 bg-black/40 z-40"
+    ></div>
+
+    <!-- Modal -->
+    <div
+        x-show="open"
+        x-transition
+        class="fixed inset-0 flex items-center justify-center z-50"
+    >
+        <div
+            @click.stop
+            class="bg-main-5 p-6 rounded-lg shadow-xl w-80 space-y-4"
+        >
+            <!-- HTMX injects HTML here -->
+            <div id="login-modal-body"></div>
+
+            <button
+                @click="open = false"
+                class="w-full text-center text-sm mt-1"
+            >
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>

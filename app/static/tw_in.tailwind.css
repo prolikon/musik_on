@@ -9,6 +9,13 @@
     }
 }
 
+@theme {
+    --color-main-1: #040000;
+    --color-main-3: #1a1818;
+    --color-main-5: #343030;
+    --color-main-6: #3e3636;
+}
+
 .card {
     @apply [&[data-state=download]>.download]:flex;
     @apply [&[data-state=in-progress]>.in-progress]:flex;

@@ -1,5 +1,5 @@
 import asyncio
-from os import path
+from os import getenv, path
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from socketio import ASGIApp, AsyncServer
+from starlette.middleware.sessions import SessionMiddleware
 
 load_dotenv()
 
@@ -15,6 +16,7 @@ from . import db  # noqa: E402
 BASE_DIR = Path(__file__).resolve().parent
 
 app = FastAPI()
+app.add_middleware(SessionMiddleware, secret_key=getenv("secret_key"))
 sio = AsyncServer(async_mode="asgi", cors_allowed_origins="*")
 
 templates = Jinja2Templates(BASE_DIR / "template")

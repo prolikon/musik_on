@@ -173,7 +173,7 @@ async def spotify_playlist(request: Request, pl_id: str):
             track["status"] = audio_status
 
         return render(
-            "playlist.html", request, videos=tracks_yt, playlist=playlist_meta
+            "page/playlist.html", request, videos=tracks_yt, playlist=playlist_meta
         )
     else:
         entries = []
@@ -189,7 +189,7 @@ async def spotify_playlist(request: Request, pl_id: str):
             )
 
         return render(
-            "spotify_playlist_load.html",
+            "page/spotify_playlist_load.html",
             request,
             tracks=tracks_sp,
             playlist=playlist_meta,

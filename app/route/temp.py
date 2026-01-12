@@ -12,7 +12,7 @@ yt_pattern = r'(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|you
 # Home page
 @app.get("/")
 def index(request: Request):
-    return render("index.html", request)
+    return render("page/index.html", request)
 
 
 @app.post("/api/route")
@@ -36,7 +36,7 @@ def video(request: Request, video_id: str):
         video_status = -1
 
     return render(
-        "video.html",
+        "page/video.html",
         request,
         video_id=video_id,
         audio_status=audio_status,
@@ -63,4 +63,4 @@ def playlist(request: Request, pl_id: str):
             }
         )
 
-    return render("playlist.html", request, videos=entries)
+    return render("page/playlist.html", request, videos=entries)

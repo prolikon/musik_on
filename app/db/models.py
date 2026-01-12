@@ -4,6 +4,16 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from . import AsyncSession, Base
 
 
+# Users duh
+class User(Base):
+    __tablename__ = "user"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    hash: Mapped[str] = mapped_column()
+    name: Mapped[str] = mapped_column()
+
+
+# Track data
 class TrackMeta(Base):
     __tablename__ = "track_meta"
 

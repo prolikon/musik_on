@@ -1,1 +1,1 @@
-from . import spotify, temp  # noqa: F401
+from . import auth, collection, spotify, temp  # noqa: F401
