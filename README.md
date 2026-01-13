@@ -19,8 +19,4 @@ blah blah blah, still in progress, etc etc.
 ### Other
 - tailwind
 - a database
-
-### .env
-- secret_key
-- spotify_client_id
-- spotify_client_secret
+- filled out .env !!!
