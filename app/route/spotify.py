@@ -20,11 +20,13 @@ Spotify = spotipy.Spotify(
 
 
 def get_spotify_playlist(playlist_id):
-    result = Spotify.playlist(
-        playlist_id,
-        fields="images,name,description,tracks(next,items(track(id,name,artists(name),album(images))))",
+    playlist = Spotify.playlist(
+        playlist_id, fields="images,name,description", additional_types=()
     )
-    tracks = result.get("tracks")
+    tracks = Spotify.playlist_items(
+        playlist_id,
+        fields="href,limit,next,offset,previous,total,items(track(id,name,artists(name),album(images)))",
+    )
     songs = []
 
     # Results can contain multiple pages, we dunno how many so we have to use a while loop.
@@ -46,15 +48,15 @@ def get_spotify_playlist(playlist_id):
         else:
             break
 
-    description = result["description"]
+    description = playlist["description"]
     if description == "":
         description = (
             "this spotify playlist has no description. that's pretty lame dawg."
         )
 
     return {
-        "thumbnail": result["images"][0]["url"],
-        "name": result["name"],
+        "thumbnail": playlist["images"][0]["url"],
+        "name": playlist["name"],
         "description": description,
         "tracks": songs,
     }
