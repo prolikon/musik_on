@@ -1,243 +1,139 @@
-{% extends "base.html" %}
-
-{% block head %}
+{% extends "base.html" %} {% block head %}
 <title>music.prolikon.dev</title>
-<script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
-{% endblock %}
-
-{% block body %}
+<script defer src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+<script defer src="/static/js/playlist.js"></script>
+{% endblock %} {% block body %}
 <body class="bg-main-1 text-white flex justify-center p-2 min-h-screen">
     <div class="w-full max-w-[1000px] flex flex-col gap-2">
-
         {% include "partial/header.html" %}
 
         <div class="flex items-center gap-6 bg-main-3 p-2 rounded-lg w-full">
-            <img src="{{playlist.thumbnail}}" class="size-18 rounded-lg object-cover"/>
+            <img
+                src="{{playlist.thumbnail}}"
+                class="size-18 rounded-lg object-cover"
+            />
             <div class="flex flex-col justify-start flex-1 h-full gap-2">
-                <div class="h-6 sm:text-lg font-semibold">{{playlist.name}}</div>
-                <div class="h-6 sm:text-sm text-xs">{{playlist.description}}</div>
+                <div class="h-6 sm:text-lg font-semibold">
+                    {{playlist.name}}
+                </div>
+                <div class="h-6 sm:text-sm text-xs">
+                    {{playlist.description}}
+                </div>
             </div>
         </div>
 
-        <div class="grid gap-2 text-sm sm:text-base grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
-            <button id="download" onclick="downloadSelected()"
-                class="bg-main-3 rounded-lg flex items-center gap-1 justify-center p-1 hover:bg-lime-700 cursor-pointer transition-colors">
-                    <i class="fa-solid fa-download"></i><span class="font-semibold">Download</span></button>
-            <button id="request" onclick="requestSelectedAudios()"
-                class="bg-main-3 rounded-lg flex items-center gap-1 justify-center p-1 hover:bg-lime-700 cursor-pointer transition-colors">
-                    <i class="fa-solid fa-hands-praying"></i><span class="font-semibold">Request</span></button>
-            <button id="export" onclick="console.log('Export')"
-                class="bg-main-3 rounded-lg flex items-center gap-1 justify-center p-1 hover:bg-lime-700 cursor-pointer transition-colors">
-                    <i class="fa-solid fa-book-medical"></i><span class="font-semibold">Add to collection</span></button>
-            <button id="select_all" onclick="toggleSelectAll()"
-                class="bg-main-3 rounded-lg flex items-center gap-1 justify-center p-1 cursor-pointer transition-colors">
-                    <i class="fa-solid fa-layer-group"></i><span class="font-semibold">Select All</span></button>
-            <button id="select_dir" onclick="promptDir()"
-                class="bg-main-3 rounded-lg flex items-center gap-1 justify-center p-1 hover:bg-lime-700 cursor-pointer transition-colors">
-                    <i class="fa-solid fa-folder"></i><span class="font-semibold">Select folder</span></button>
-            <button id="playlist" x-data="{ on: false }" @click="on = !on" :class="on ? 'bg-lime-700' : 'bg-main-3'"
-                class="rounded-lg flex items-center gap-1 justify-center p-1 cursor-pointer transition-colors">
-                    <i class="fa-solid fa-file-audio"></i><span class="font-semibold">Create playlist file</span></button>
+        <div
+            class="grid gap-2 text-sm sm:text-base grid-cols-[repeat(auto-fit,minmax(300px,1fr))]"
+        >
+            <button
+                id="download"
+                onclick="downloadSelected()"
+                class="bg-main-3 rounded-lg flex items-center gap-1 justify-center p-1 hover:bg-lime-700 cursor-pointer transition-colors"
+            >
+                <i class="fa-solid fa-download"></i
+                ><span class="font-semibold">Download</span>
+            </button>
+            <button
+                id="request"
+                onclick="requestSelectedAudios()"
+                class="bg-main-3 rounded-lg flex items-center gap-1 justify-center p-1 hover:bg-lime-700 cursor-pointer transition-colors"
+            >
+                <i class="fa-solid fa-hands-praying"></i
+                ><span class="font-semibold">Request</span>
+            </button>
+            <button
+                id="export"
+                onclick="console.log('Export')"
+                class="bg-main-3 rounded-lg flex items-center gap-1 justify-center p-1 hover:bg-lime-700 cursor-pointer transition-colors"
+            >
+                <i class="fa-solid fa-book-medical"></i
+                ><span class="font-semibold">Add to collection</span>
+            </button>
+            <button
+                id="select_all"
+                onclick="toggleSelectAll()"
+                class="bg-main-3 rounded-lg flex items-center gap-1 justify-center p-1 cursor-pointer transition-colors"
+            >
+                <i class="fa-solid fa-layer-group"></i
+                ><span class="font-semibold">Select All</span>
+            </button>
+            <button
+                id="select_dir"
+                onclick="promptDir()"
+                class="bg-main-3 rounded-lg flex items-center gap-1 justify-center p-1 hover:bg-lime-700 cursor-pointer transition-colors"
+            >
+                <i class="fa-solid fa-folder"></i
+                ><span class="font-semibold">Select folder</span>
+            </button>
+            <button
+                id="playlist"
+                x-data="{ on: false }"
+                @click="on = !on"
+                :class="on ? 'bg-lime-700' : 'bg-main-3'"
+                class="rounded-lg flex items-center gap-1 justify-center p-1 cursor-pointer transition-colors"
+            >
+                <i class="fa-solid fa-file-audio"></i
+                ><span class="font-semibold">Create playlist file</span>
+            </button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {% for video in videos %}
-                <div id="{{video.id}}" data-card data-state="{% if video.status==-1 %}download{% elif video.status==-2 %}request{% else %}in-progress{% endif %}"
-                    class="card relative w-full flex items-start gap-4 bg-main-3 p-2 rounded-lg shadow hover:scale-101 transition-[scale] outline-lime-700">
-                    <img class="object-cover object-center size-16 rounded-md" src="https://img.youtube.com/vi/{{video.id}}/mqdefault.jpg">
+                <div
+                    id="{{video.id}}"
+                    data-card
+                    data-state="{% if video.status==-1 %}download{% elif video.status==-2 %}request{% else %}in-progress{% endif %}"
+                    class="card relative w-full flex items-start gap-4 bg-main-3 p-2 rounded-lg shadow hover:scale-101 transition-[scale] outline-lime-700"
+                >
+                    <img
+                        class="object-cover object-center size-16 rounded-md"
+                        src="https://img.youtube.com/vi/{{video.id}}/mqdefault.jpg"
+                    />
                     <div class="flex flex-col h-full justify-between">
-                        <div class="text-base font-semibold truncate">{{video.title}}</div>
-                        <div class="text-xs text-gray-300">{{video.artist}}</div>
-                        <div class="flex mt-1 mb-1 items-center gap-2 text-xs text-white/20">{{video.id}}</div>
+                        <div class="text-base font-semibold truncate">
+                            {{video.title}}
+                        </div>
+                        <div class="text-xs text-gray-300">
+                            {{video.artist}}
+                        </div>
+                        <div
+                            class="flex mt-1 mb-1 items-center gap-2 text-xs text-white/20"
+                        >
+                            {{video.id}}
+                        </div>
                     </div>
-                    <a id="download-{{video_id}}" href="/static/media/{{video.id}}.opus" class="download hidden
-                        absolute bottom-2 right-2 bg-lime-700 rounded-full size-8 items-center justify-center p-2 hover:bg-white transition-colors">
+                    <a
+                        id="download-{{video_id}}"
+                        href="/static/media/{{video.id}}.opus"
+                        class="download hidden absolute bottom-2 right-2 bg-lime-700 rounded-full size-8 items-center justify-center p-2 hover:bg-white transition-colors"
+                    >
                         <i class="fa-solid fa-download text-slate-900"></i>
                     </a>
-                    <a id="processing-{{video_id}}" class="in-progress hidden spinner
-                        absolute bottom-2 right-2 bg-amber-500 rounded-full size-8 items-center justify-center p-2 hover:bg-white transition-colors">
+                    <a
+                        id="processing-{{video_id}}"
+                        class="in-progress hidden spinner absolute bottom-2 right-2 bg-amber-500 rounded-full size-8 items-center justify-center p-2 hover:bg-white transition-colors"
+                    >
                         <i class="fa-solid fa-gear text-slate-900"></i>
                     </a>
-                    <a id="request-{{video_id}}" onclick='requestAudio("{{video.id}}")' class="request hidden
-                        absolute bottom-2 right-2 bg-red-800 rounded-full size-8 items-center justify-center p-2 hover:bg-white transition-colors">
+                    <a
+                        id="request-{{video_id}}"
+                        onclick='requestAudio("{{video.id}}")'
+                        class="request hidden absolute bottom-2 right-2 bg-red-800 rounded-full size-8 items-center justify-center p-2 hover:bg-white transition-colors"
+                    >
                         <i class="fa-solid fa-hands-praying text-slate-900"></i>
                     </a>
-                    <a class="complete hidden absolute bottom-2 right-2 bg-white rounded-full size-8 items-center justify-center p-2">
-                        <i class="fa-solid fa-file-circle-check text-slate-900"></i>
+                    <a
+                        class="complete hidden absolute bottom-2 right-2 bg-white rounded-full size-8 items-center justify-center p-2"
+                    >
+                        <i
+                            class="fa-solid fa-file-circle-check text-slate-900"
+                        ></i>
                     </a>
                 </div>
                 {% endfor %}
             </div>
         </div>
-
-    <script>
-const socket = io();
-
-let selectedIds = [];
-const download = document.getElementById("download");
-const request = document.getElementById("requeset");
-const selectAll = document.getElementById("select_all");
-const dirButton = document.getElementById("select_dir")
-const cards = document.querySelectorAll("[data-card]");
-
-let dirHandle;
-
-async function promptDir() {
-  try {
-    dirHandle = await window.showDirectoryPicker({id: "1", mode: "readwrite", startIn: "music"});
-  } finally {
-    dirButton.innerHTML = `&nbsp;<i class="fa-solid fa-folder-open"></i>&nbsp;${dirHandle.name}&nbsp;`
-
-    for (const card of cards) {
-      const fileName = `${card.id}.opus`;
-
-      try {
-        await dirHandle.getFileHandle(fileName);
-        card.dataset.state = "complete"
-      } catch (err) {
-        card.dataset.state = "complete"
-      }
-    }
-  }
-}
-
-async function downloadSelected() {
-  if (!dirHandle) {
-    alert('Please select a folder first');
-    return;
-  }
-
-  let m3u = "";
-
-  for (const id of selectedIds) {
-    try {
-      m3u += id + ".opus\n"
-      await downloadAudio(id);
-    } catch (error) {
-      console.log(`Failed to download ${id}`);
-    }
-  }
-
-  const fileHandle = await dirHandle.getFileHandle(`{{playlist.name}}.m3u`, { create: true });
-  const writable = await fileHandle.createWritable()
-  await writable.write(m3u)
-  await writable.close()
-
-}
-
-async function downloadAudio(id) {
-  const filename = `${id}.opus`;
-
-  try {
-    await dirHandle.getFileHandle(filename, {create: false});
-    return;
-  } catch (e) {
-    // we lowkey wanna get here 8-)
-  }
-
-  const response = await fetch(`/static/media/${id}.opus`);
-  if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-
-  const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
-  const writable = await fileHandle.createWritable();
-
-  await response.body.pipeTo(writable);
-
-  document.getElementById(id).dataset.state = "complete";
-}
-
-
-// SOCKET //
-
-function requestAudio(id) {
-  console.log("Requesting", id)
-  socket.emit("request_audios", { video_id: [id] });
-}
-
-function requestSelectedAudios(id) {
-  console.log("Requesting", selectedIds)
-  socket.emit("request_audios", { video_id: selectedIds });
-}
-
-socket.on("tasks_enqueued", function (data) {
-  if (data.type == "request_audio") {
-    data.tasks.forEach(task => {
-    let card = document.getElementById(task.video_id)
-    if (card) {
-      card.dataset.state = "in-progress"
-    }
-    })
-  }
-});
-
-socket.on("task_complete", data => {
-  if (data.task == "request_audio") {
-    let card = document.getElementById(data.video_id)
-    if (card) {
-      card.dataset.state = "download"
-    }
-  }
-});
-
-// HTML //
-
-function toggleCard(id) {
-  const cards = Array.from(document.querySelectorAll("[data-card]"));
-  const el = document.getElementById(id);
-  if (selectedIds.includes(id)) {
-    if (selectedIds.length === cards.length) {
-      selectAll.classList.add("bg-main-3")
-      selectAll.classList.remove("bg-lime-700")
-    }
-    selectedIds = selectedIds.filter(x => x !== id);
-    el.classList.remove("outline-3");
-  } else {
-    selectedIds.push(id);
-    el.classList.add("outline-3");
-    if (selectedIds.length === cards.length) {
-      selectAll.classList.remove("bg-main-3")
-      selectAll.classList.add("bg-lime-700")
-    }
-  }
-}
-
-function toggleSelectAll() {
-  const cards = Array.from(document.querySelectorAll("[data-card]"));
-
-  if (selectedIds.length === cards.length) {
-    // all selected → deselect all
-    selectedIds = [];
-    document.querySelectorAll("[data-card]").forEach(card => {
-      if (!selectedIds.includes(card.id)) {
-        card.classList.remove("outline-3");
-      }
-    });
-    selectAll.classList.add("bg-main-3")
-    selectAll.classList.remove("bg-lime-700")
-  } else {
-      // not all selected → select all
-    selectedIds = cards.map(card => card.id);
-    selectedIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.classList.add("outline-3");
-    });
-    selectAll.classList.remove("bg-main-3")
-    selectAll.classList.add("bg-lime-700")
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("[data-card]").forEach(card => {
-      card.addEventListener("click", (e) => {
-      if (e.target.closest("a")) return;
-      toggleCard(card.id);
-      });
-  });
-});
-
-    </script>
-
-
+    </div>
 </body>
 {% endblock %}
