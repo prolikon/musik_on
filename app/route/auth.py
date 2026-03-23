@@ -16,7 +16,7 @@ async def login_get(request: Request):
 
 @app.post("/auth/login")
 async def login(request: Request, username: str = Form(""), password: str = Form("")):
-    async with AsyncSessionLocal() as session:
+    async with AsyncSessionLocal() as session:  # pyright: ignore[reportGeneralTypeIssues]
         user: User = await session.scalar(select(User).where(User.name == username))
 
     if user is None:
@@ -42,7 +42,7 @@ async def register(request: Request):
 
 @app.get("/debug/adam")
 async def create_adam():
-    async with AsyncSessionLocal() as session:
+    async with AsyncSessionLocal() as session:  # pyright: ignore[reportGeneralTypeIssues]
         adam = User(name="adam", hash=crypto.hash("password"))
         session.add(adam)
         await session.commit()
