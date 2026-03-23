@@ -1,8 +1,6 @@
 from os import getenv
 
-import spotipy
 from fastapi import Request
-from spotipy.oauth2 import SpotifyClientCredentials
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -11,13 +9,6 @@ from ..db import AsyncSessionLocal
 from ..db.models import TrackMeta, TrackSource
 from ..util.spotify import get_spotify_playlist
 from ..util.youtube import audio_exists
-
-Spotify = spotipy.Spotify(
-    auth_manager=SpotifyClientCredentials(
-        client_id=getenv("spotify_client_id"),
-        client_secret=getenv("spotify_client_secret"),
-    )
-)
 
 
 # this route should be called by the client when they load the /spotify/plid/load page.
@@ -33,6 +24,7 @@ async def spotify_playlist_load(pl_id: str):
 
     # spotify tracksource -> trackmeta -> youtube tracksource
     async with AsyncSessionLocal() as session:  # pyright: ignore[reportGeneralTypeIssues]
+        # load existing Spotify sources from DB
         spotify_sources_result = await session.execute(
             select(TrackSource)
             .where(TrackSource.source == "spotify", TrackSource.id.in_(spotify_ids))
@@ -57,10 +49,12 @@ async def spotify_playlist_load(pl_id: str):
         new_sources = []
         for spotify_id, (artist, title) in meta_mapping.items():
             meta = metas_by_key[(artist, title)]
-            new_source = TrackSource(source="spotify", id=spotify_id, track_meta=meta)
-
+            new_source = TrackSource(
+                source="spotify",
+                id=spotify_id,
+                track_meta_id=meta.id,
+            )
             new_sources.append(new_source)
-            meta.sources.append(new_source)
 
         if new_sources:
             session.add_all(new_sources)
