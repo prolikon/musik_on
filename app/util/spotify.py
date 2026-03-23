@@ -1,17 +1,22 @@
 from os import getenv
 
 from spotipy import Spotify
-from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy.oauth2 import SpotifyOAuth
 
 from ..db import AsyncSessionLocal
 from ..db.models import Cache
 
-spotify = Spotify(
-    auth_manager=SpotifyClientCredentials(
-        client_id=getenv("spotify_client_id"),
-        client_secret=getenv("spotify_client_secret"),
-    )
+auth_manager = SpotifyOAuth(
+    client_id=getenv("spotify_client_id"),
+    client_secret=getenv("spotify_client_secret"),
+    redirect_uri=getenv("spotify_redirect_uri"),
+    scope="playlist-read-private playlist-read-collaborative",
 )
+
+# print(auth_manager.get_authorize_url())
+# EVILCODE = input("GIVE ME YOUR CODE: ")
+# auth_manager.get_access_token(EVILCODE)
+spotify = Spotify(auth_manager=auth_manager)
 
 
 async def get_spotify_playlist(playlist_id, no_update=False):
@@ -31,15 +36,15 @@ async def get_spotify_playlist(playlist_id, no_update=False):
         return cached_playlist
 
     songs = []
-    tracks = playlist["tracks"]
+    tracks = playlist["items"]
 
     # Results can contain multiple pages, we dunno how many so we have to use a while loop.
     while tracks:
         for item in tracks["items"]:
-            track = item["track"]
+            track = item["item"]
             if track:  # Check if track exists for item
                 song_info = {
-                    "id": item["track"]["id"],
+                    "id": track["id"],
                     "title": track["name"],
                     "artists": [artist["name"] for artist in track["artists"]],
                     "image": track["album"]["images"],
